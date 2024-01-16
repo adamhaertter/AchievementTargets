@@ -1,0 +1,9 @@
+# The most important one to never commit
+.env
+
+# Auto-generated files and directories
+.vscode/
+
+# Testing or temporary files
+
+# Other
