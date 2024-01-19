@@ -3,7 +3,7 @@
 
 # Auto-generated files and directories
 .vscode/
-src/__pycache__
+*.pyc
 
 # Testing or temporary files
 ROADMAP.md
