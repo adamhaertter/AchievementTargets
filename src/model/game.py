@@ -10,3 +10,5 @@ class Game:
 
     def __str__(self) -> str:
         return f"{self.title} ({self.game_id})"
+    
+    # Get artwork per game (wrap into the class)
