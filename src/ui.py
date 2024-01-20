@@ -9,17 +9,6 @@ from model.player import Player
 
 loaded_user: Player
 
-def create_ui():
-    # Create the main window
-    main = tk.Tk(screenName="Screen Name", baseName="Base Name")
-
-    # Add widgets
-    button = tk.Button(main, text="demo button", width=25, command=main.destroy)
-    button.pack()
-
-    # Run window logic and listen for events
-    main.mainloop()
-
 def load_image_to_canvas(url, canvas):
     print(f"Attempting to load image: {url}")
     try:
@@ -47,24 +36,37 @@ def update_user_details(source_widget, canvas_widget=None, label_widget=None):
     if(label_widget != None):
         label_widget.config(text=loaded_user.username)
 
-def create_player_ui():
-    main = tk.Tk(screenName="Player Data")
+def create_player_panel(parent):
+    #main = tk.Tk(screenName="Player Data")
+    panel = tk.Frame(parent, bg="red")
 
-    steamid_input = tk.Entry(main, width=30)
+    steamid_input = tk.Entry(panel, width=30)
     steamid_input.pack()
 
-    submit = tk.Button(main, text="Query for User", command=lambda: update_user_details(steamid_input, canvas_widget=player_img, label_widget=player_label))
+    submit = tk.Button(panel, text="Query for User", command=lambda: update_user_details(steamid_input, canvas_widget=player_img, label_widget=player_label))
     submit.pack()
 
-    player_img = tk.Canvas(main, width=184, height=184) # Steam avatar resolution
+    player_img = tk.Canvas(panel, width=184, height=184) # Steam avatar resolution
     player_img.pack()
 
-    player_label = tk.Label(main, name="tempPlayerLabel")
+    player_label = tk.Label(panel, name="tempPlayerLabel")
     player_label.pack()
 
+    return panel
+    #main.mainloop()
+
+def create_ui():
+    # Create the main window
+    main = tk.Tk(screenName="Screen Name", baseName="Base Name")
+
+    # Add separate panels
+    player_panel = create_player_panel(main)
+    player_panel.grid(row=0, column=0)
+
+    # Run window logic and listen for events
     main.mainloop()
 
-create_player_ui()
+create_ui()
 
 # TODO TEMP Roadmap
 # Get player data by id input box of some kind
