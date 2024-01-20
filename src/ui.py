@@ -6,8 +6,10 @@ from urllib.request import urlopen
 from PIL import Image, ImageTk
 from io import BytesIO
 from model.player import Player
+from model.game import Game
 
 loaded_user: Player
+loaded_library: list[Game]
 
 def load_image_to_canvas(url, canvas):
     print(f"Attempting to load image: {url}")
@@ -21,6 +23,7 @@ def load_image_to_canvas(url, canvas):
         print("Failed to load image: ", e)
 
 def update_user_details(source_widget, canvas_widget=None, label_widget=None):
+    global loaded_user
     print("UpdateUserDetails entered")
     pid = source_widget.get()
     # TODO Format validation to prevent overquerying
@@ -55,6 +58,34 @@ def create_player_panel(parent):
     return panel
     #main.mainloop()
 
+def update_games_list(listbox:tk.Listbox):
+    global loaded_library
+
+    library = apiQueryWrapper.get_owned_games(loaded_user.player_id)
+    loaded_library = sorted(library, key=lambda game: game.title)
+
+    # Clear current list
+    listbox.delete(0, tk.END)
+
+    maxlength = 0
+    for item in loaded_library:
+        listbox.insert(tk.END, item)
+        if len(item.title) > maxlength:
+            maxlength = len(item.title)
+
+    listbox.config(width=maxlength)
+
+def create_games_panel(parent):
+    panel = tk.Frame(parent, bg="green")
+
+    games_list = tk.Listbox(panel)
+    games_list.pack()
+
+    fetch = tk.Button(panel, text="Fetch Library", command=lambda:update_games_list(games_list))
+    fetch.pack()
+
+    return panel
+
 def create_ui():
     # Create the main window
     main = tk.Tk(screenName="Screen Name", baseName="Base Name")
@@ -62,6 +93,9 @@ def create_ui():
     # Add separate panels
     player_panel = create_player_panel(main)
     player_panel.grid(row=0, column=0)
+
+    library_panel = create_games_panel(main)
+    library_panel.grid(row=0, column=1)
 
     # Run window logic and listen for events
     main.mainloop()
