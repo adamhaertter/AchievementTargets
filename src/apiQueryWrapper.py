@@ -57,7 +57,15 @@ def get_player_achievements(user_id, app_id):
 def get_game_achievements(app_id):
     parsed = execute(f"https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/?key={key}&appid={app_id}")
 
-    achievements = [Achievement(achievement_id=query['name'], name=query['displayName'], desc=query['description'], icon=query['icon']) for query in parsed['game']['availableGameStats']['achievements']]
+    achievements = []
+    for query in parsed.get('game', {}).get('availableGameStats', {}).get('achievements', []):
+        achievement_id = query['name']
+        name = query['displayName']
+        desc = query.get('description', 'HIDDEN ACHIEVEMENT')  
+        icon = query['icon']
+
+        achievement = Achievement(achievement_id=achievement_id, name=name, desc=desc, icon=icon)
+        achievements.append(achievement)
 
     return achievements
 
@@ -73,8 +81,7 @@ def get_owned_games(user_id):
 # TEMPORARY TESTING METHODS 
 
 #get_player_achievements(test_user_id, test_app_id)
-#get_game_achievements(test_app_id)
-# resp = get_owned_games(test_user_id)
-
+# temp = get_game_achievements(945360)
+# # resp = get_owned_games(test_user_id)
 # for obj in resp:
 #     print(f"{obj.title} ({obj.game_id})")
