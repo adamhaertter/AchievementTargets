@@ -31,7 +31,6 @@ def build_free_query(interface, endpoint, version, args_string):
     return url_start + "f{url_interface}/{url_endpoint}/{url_version}/{url_args}"
 
 # Get Player Data (Name, ID, Profile Picture)
-# TODO Update to take in ID when testing is done
 def get_player_data(user_id):
     parsed = execute(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={key}&steamids={user_id}")
     
@@ -39,7 +38,10 @@ def get_player_data(user_id):
     player_array = [Player(player_id=players['steamid'], username=players['personaname'], avatar=players['avatarfull']) for players in parsed['response']['players']] 
     
     # Return first player only (for now)
-    return player_array[0]
+    try:
+        return player_array[0]
+    except Exception as e:
+        return None
 
 # Get Achievements by Player & Game
 # Returns a tuple with index 0 as the internal achievement name/id and index 1 as a bool whether the player has obtained this achievement
@@ -67,3 +69,12 @@ def get_owned_games(user_id):
     library = [Game(game_id=games['appid'], title=games['name'], boxart=games['img_icon_url']) for games in parsed['response']['games']]
 
     return library
+
+# TEMPORARY TESTING METHODS 
+
+#get_player_achievements(test_user_id, test_app_id)
+#get_game_achievements(test_app_id)
+# resp = get_owned_games(test_user_id)
+
+# for obj in resp:
+#     print(f"{obj.title} ({obj.game_id})")
