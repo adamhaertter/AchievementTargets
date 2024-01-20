@@ -7,14 +7,21 @@ from PIL import Image, ImageTk
 from io import BytesIO
 from model.player import Player
 from model.game import Game
+from model.achievement import Achievement
 
 loaded_user: Player
-loaded_library: list[Game]
+loaded_library: list[Game] = []
+loaded_all_achievements: list[Achievement] = []
 
-def load_image_to_canvas(url, canvas):
+# Able to resize image if specific dimensions are passed in, otherwise uses default dimensions
+def load_image_to_canvas(url, canvas, width=0, height=0):
     print(f"Attempting to load image: {url}")
     try:
         pilimg = Image.open(requests.get(url, stream=True).raw)
+
+        if(width != 0 and height != 0):
+            pilimg = pilimg.resize((width, height), Image.Resampling.LANCZOS)
+        
         img = ImageTk.PhotoImage(pilimg)
 
         canvas.create_image(0, 0, anchor=tk.NW, image=img)
@@ -87,11 +94,11 @@ def create_games_panel(parent):
 
     return panel
 
-def get_selected_item(listbox:tk.Listbox):
+def get_selected_item(listbox:tk.Listbox, iterable:list):
     selected = listbox.curselection()
     if selected:
         #selected = listbox.get(selected)
-        selected = loaded_library[int(selected[0])]
+        selected = iterable[int(selected[0])]
         print(f"Selected Item: {selected}")
         return selected
     else:
@@ -99,7 +106,7 @@ def get_selected_item(listbox:tk.Listbox):
         return None
 
 def update_achievements_list(listbox:tk.Listbox, canvas:tk.Canvas = None):
-    loaded_game = get_selected_item(games_list)
+    loaded_game = get_selected_item(games_list, loaded_library)
     if(loaded_game == None):
         return
     
@@ -129,13 +136,54 @@ def create_achievement_panel(parent):
     game_art_img = tk.Canvas(panel, width=184, height=69) # Steam preview capsule regulated size
     game_art_img.pack()
 
+    global achievement_list
     achievement_list = tk.Listbox(panel)
     achievement_list.pack()
 
     fetch = tk.Button(panel, text="Refresh Achievements", command=lambda:update_achievements_list(achievement_list, game_art_img))
     fetch.pack()
 
+    show_popup = tk.Button(panel, text="Expand Popup", command=lambda:achievement_detail_popup(parent))
+    show_popup.pack()
+
     return panel
+
+def achievement_detail_popup(parent):
+    popup = tk.Toplevel(parent)
+    popup.title = "Achievement Details"
+
+    target_label = tk.Label(popup, font=("Arial", 20))
+    target_label.config(text="Current Target", fg="red")
+    target_label.grid(row=0, column=0)
+
+    content_panel = tk.Frame(popup)
+    content_panel.grid(row=1, column=0)
+
+    loaded_achievement : Achievement = get_selected_item(achievement_list, loaded_all_achievements)
+
+    icon_art = tk.Canvas(content_panel, width=128, height=128)
+    icon_art.grid(row=0, column=0)
+    #icon_art.pack()
+    load_image_to_canvas(loaded_achievement.icon, icon_art, width=128, height=128)
+
+    wrap_length = 250
+
+    labels_panel = tk.Frame(content_panel, width=wrap_length)
+    labels_panel.columnconfigure(0, minsize=wrap_length)
+
+    title_text = tk.Label(labels_panel, font=("Arial", 16), wraplength=wrap_length)
+    title_text.config(text=loaded_achievement.name)
+    title_text.grid(row=0, column=0)
+    #title_text.pack()
+
+    desc_text = tk.Label(labels_panel, font=("Arial", 12), wraplength=wrap_length)
+    desc_text.config(text=loaded_achievement.desc)
+    desc_text.grid(row=1, column=0)
+    #desc_text.pack()
+
+    
+    labels_panel.grid(row=0, column=1)
+    #labels_panel.pack()
 
 def create_ui():
     # Create the main window
