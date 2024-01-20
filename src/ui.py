@@ -70,7 +70,7 @@ def update_games_list(listbox:tk.Listbox):
     maxlength = 0
     for item in loaded_library:
         listbox.insert(tk.END, item)
-        if len(item.title) > maxlength:
+        if(len(item.title) > maxlength):
             maxlength = len(item.title)
 
     listbox.config(width=maxlength)
@@ -78,10 +78,61 @@ def update_games_list(listbox:tk.Listbox):
 def create_games_panel(parent):
     panel = tk.Frame(parent, bg="green")
 
-    games_list = tk.Listbox(panel)
+    global games_list
+    games_list = tk.Listbox(panel, selectmode=tk.SINGLE)
     games_list.pack()
 
     fetch = tk.Button(panel, text="Fetch Library", command=lambda:update_games_list(games_list))
+    fetch.pack()
+
+    return panel
+
+def get_selected_item(listbox:tk.Listbox):
+    selected = listbox.curselection()
+    if selected:
+        #selected = listbox.get(selected)
+        selected = loaded_library[int(selected[0])]
+        print(f"Selected Item: {selected}")
+        return selected
+    else:
+        print("No item selected at this time")
+        return None
+
+def update_achievements_list(listbox:tk.Listbox, canvas:tk.Canvas = None):
+    loaded_game = get_selected_item(games_list)
+    if(loaded_game == None):
+        return
+    
+    global loaded_all_achievements
+    loaded_all_achievements = apiQueryWrapper.get_game_achievements(loaded_game.game_id)
+    loaded_owned_achievements = apiQueryWrapper.get_player_achievements(loaded_user.player_id, loaded_game.game_id)
+
+    # Update all achieved bool to be accurate
+    tuple_dict = dict(loaded_owned_achievements)
+    for target in loaded_all_achievements:
+        if target.achievement_id in tuple_dict:
+            target.achieved = tuple_dict[target.achievement_id]
+
+    # Clear out old data
+    listbox.delete(0, tk.END)
+
+    for item in loaded_all_achievements:
+        listbox.insert(tk.END, item)
+    listbox.config(width=100)
+    
+    if(canvas != None):
+        load_image_to_canvas(loaded_game.get_preview_art(), canvas)
+
+def create_achievement_panel(parent):
+    panel = tk.Frame(parent, bg="blue")
+
+    game_art_img = tk.Canvas(panel, width=184, height=69) # Steam preview capsule regulated size
+    game_art_img.pack()
+
+    achievement_list = tk.Listbox(panel)
+    achievement_list.pack()
+
+    fetch = tk.Button(panel, text="Refresh Achievements", command=lambda:update_achievements_list(achievement_list, game_art_img))
     fetch.pack()
 
     return panel
@@ -96,6 +147,9 @@ def create_ui():
 
     library_panel = create_games_panel(main)
     library_panel.grid(row=0, column=1)
+
+    achievement_panel = create_achievement_panel(main)
+    achievement_panel.grid(row=0, column=2)
 
     # Run window logic and listen for events
     main.mainloop()
