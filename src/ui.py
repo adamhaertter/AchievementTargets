@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 
 import requests
 import apiQueryWrapper
@@ -20,7 +21,7 @@ def load_image_to_canvas(url, canvas, width=0, height=0):
         pilimg = Image.open(requests.get(url, stream=True).raw)
 
         if(width != 0 and height != 0):
-            pilimg = pilimg.resize((width, height), Image.Resampling.LANCZOS)
+            pilimg = pilimg.resize((width, height), Image.Resampling.NEAREST) # LANCZOS for antialias, but crunches pixel games
         
         img = ImageTk.PhotoImage(pilimg)
 
@@ -149,35 +150,42 @@ def create_achievement_panel(parent):
     return panel
 
 def achievement_detail_popup(parent):
+    wrap_length = 250
+    display_font = "Segoe UI"
+    background_color = "#121212"
+    text_color = "#ffffff"
+
     popup = tk.Toplevel(parent)
     popup.title = "Achievement Details"
+    popup.config(bg=background_color)
 
-    target_label = tk.Label(popup, font=("Arial", 20))
-    target_label.config(text="Current Target", fg="red")
+    target_label = tk.Label(popup, font=(display_font, 20, "bold"))
+    target_label.config(text="Current Target", fg="red", background=background_color)
     target_label.grid(row=0, column=0)
 
     content_panel = tk.Frame(popup)
     content_panel.grid(row=1, column=0)
+    content_panel.configure(background=background_color)
 
     loaded_achievement : Achievement = get_selected_item(achievement_list, loaded_all_achievements)
 
     icon_art = tk.Canvas(content_panel, width=128, height=128)
-    icon_art.grid(row=0, column=0)
+    icon_art.grid(row=0, column=0, padx=5, pady=5)
+    icon_art.config(background=background_color)
     #icon_art.pack()
     load_image_to_canvas(loaded_achievement.icon, icon_art, width=128, height=128)
 
-    wrap_length = 250
-
     labels_panel = tk.Frame(content_panel, width=wrap_length)
     labels_panel.columnconfigure(0, minsize=wrap_length)
+    labels_panel.config(background=background_color)
 
-    title_text = tk.Label(labels_panel, font=("Arial", 16), wraplength=wrap_length)
-    title_text.config(text=loaded_achievement.name)
+    title_text = ttk.Label(labels_panel, font=(display_font, 16, 'bold'), wraplength=wrap_length)
+    title_text.config(text=loaded_achievement.name, foreground=text_color, background=background_color)
     title_text.grid(row=0, column=0)
     #title_text.pack()
 
-    desc_text = tk.Label(labels_panel, font=("Arial", 12), wraplength=wrap_length)
-    desc_text.config(text=loaded_achievement.desc)
+    desc_text = ttk.Label(labels_panel, font=(display_font, 12), wraplength=wrap_length)
+    desc_text.config(text=loaded_achievement.desc, foreground=text_color, background=background_color)
     desc_text.grid(row=1, column=0)
     #desc_text.pack()
 
@@ -208,3 +216,43 @@ create_ui()
 # Get player data by id input box of some kind
 # Game list in a Listbox
 # Achievements in a Listbox based on that
+
+# # Create the main window
+# root = tk.Tk()
+# #root.title("Game Stats Tracker")
+# root.config(bg="#121212")
+
+# style = ttk.Style(root)
+# style.configure("TLabel", background="#121212", foreground='#ffffff')
+
+# # Define the fonts
+# font_arial = ("Arial", 12)
+# font_times = ("Times New Roman", 12)
+# font_roboto = ("Roboto", 12)
+# font_segoe = ("Segoe UI", 12)
+# font_open_sans = ("Open Sans", 12)
+# font_montserrat = ("Montserrat", 12)
+# font_lato = ("Lato", 12)
+# font_exo = ("Exo", 12)
+
+# # Create a label with the chosen font
+# label = ttk.Label(root, text="Game Stats: Arial", font=font_arial, style="TLabel")
+# label.pack(padx=10, pady=10)
+# label = ttk.Label(root, text="Game Stats: Roboto", font=font_roboto, style="TLabel")
+# label.pack(padx=10, pady=10)
+# label = ttk.Label(root, text="Game Stats: Segoe UI", font=font_segoe, style="TLabel")
+# label.pack(padx=10, pady=10)
+# label = ttk.Label(root, text="Game Stats: Times New Roman", font=font_times, style="TLabel")
+# label.pack(padx=10, pady=10)
+# label = ttk.Label(root, text="Game Stats: Open Sans", font=font_open_sans, style="TLabel")
+# label.pack(padx=10, pady=10)
+# label = ttk.Label(root, text="Game Stats: Montserrat", font=font_montserrat, style="TLabel")
+# label.pack(padx=10, pady=10)
+# label = ttk.Label(root, text="Game Stats: Lato", font=font_lato, style="TLabel")
+# label.pack(padx=10, pady=10)
+# label = ttk.Label(root, text="Game Stats: Exo", font=font_exo, style="TLabel")
+# label.pack(padx=10, pady=10)
+
+
+# # Run the Tkinter event loop
+# root.mainloop()
